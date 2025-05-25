@@ -1,0 +1,693 @@
+/* === CSS Değişkenleri === */
+:root {
+  --primary: #bfa149;          /* Altın - daha doğal ve mat */
+  --secondary: #6a4d1f;        /* Koyu ceviz – yazı & butonlar için ikincil */
+  --background: #f6efdf;       /* Açık bej - yumuşak zemin */
+  --text: #2e2e2e;             /* Okunabilir nötr koyulukta yazı rengi */
+  --darkGreen: #033d1b;        /* Ana koyu yeşil */
+  --hover-primary: #a88c36;    /* Altın hover – baskı hissi veren bir ton */
+  --light-primary: #f5ecd3;
+  --badge-red: #dc3545;
+  --input-bg: #fffaf0;
+  --gray-dark: #1f2937;
+  --gray-border: #9ca3af;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 5px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --transition: all 0.3s ease;
+  --border-radius: 8px;
+  --font-size-base: 16px;
+  --font-family: Arial, sans-serif;
+}
+
+/* === Genel Reset === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  background: var(--background);
+  color: var(--text);
+}
+
+/* === Container === */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 2rem 0;
+}
+
+/* === Flex === */
+.flex {
+  display: flex;
+  gap: 1rem;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+
+/* === Admin Wrapper === */
+.admin-wrapper {
+  background: var(--background);
+}
+
+/* === Topbar === */
+header {
+  height: 70px;
+  min-height: 70px;
+  line-height: 70px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background-color: var(--darkGreen);
+  color: var(--white);
+  border-bottom: 2px solid var(--primary);
+  z-index: 1000;
+}
+
+/* Topbar Başlık */
+header .fw-bold {
+  font-size: 1.4rem;
+}
+
+/* === Sidebar === */
+.admin-sidebar {
+  width: 250px;
+  background-color: var(--darkGreen);
+  color: var(--white);
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.admin-sidebar a,
+.admin-sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  color: var(--white);
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+.admin-sidebar a:hover,
+.admin-sidebar button:hover {
+  background-color: var(--hover-primary);
+  border-radius: 5px;
+  color: #fff;
+}
+
+.admin-sidebar .active {
+  background-color: var(--primary);
+  border-radius: 5px;
+  color: var(--text);
+  font-weight: bold;
+}
+
+.admin-sidebar__submenu {
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.admin-sidebar__submenu a {
+  font-size: 1rem;
+  padding: 0.4rem 1rem;
+}
+
+/* === Dashboard Başlık === */
+.dashboard__title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: var(--darkGreen);
+}
+
+/* === Stat Kartları === */
+.dashboard__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background-color: var(--white);
+  border: 1px solid var(--primary);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  background-color: var(--input-bg);
+}
+
+.stat-card__title {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.stat-card__value {
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+/* === Quick Actions === */
+.quick-action__btn {
+  background-color: var(--primary);
+  color: var(--text);
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.3s;
+  display: inline-block;
+}
+
+.quick-action__btn:hover {
+  background-color: var(--hover-primary);
+  color: #fff;
+}
+
+/* === Recent Activity & Table === */
+.recent-activity__title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--darkGreen);
+}
+
+.recent-activity__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.recent-activity__table th,
+.recent-activity__table td {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.recent-activity__table th {
+  background-color: var(--primary);
+  color: var(--text);
+}
+
+/* === Pie Chart === */
+.pie-chart__container {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.pie-chart__segment {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+}
+
+.pie-chart__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pie-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pie-chart__legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+/* === Bar Chart === */
+.bar-chart__container {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  height: 160px;
+  margin-top: 1rem;
+}
+
+.bar-chart__bar {
+  background-color: var(--primary);
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.bar-chart__label,
+.bar-chart__value {
+  font-size: 1rem;
+  margin-top: 4px;
+  color: var(--text);
+}
+
+/* === Ürün Formu ve Kartları === */
+.product-form {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.product-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-form .form-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.product-form .form-control {
+  font-size: 0.9rem;
+  border: 1px solid var(--gray-border);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  width: 100%;
+  transition: var(--transition);
+  background: var(--input-bg);
+}
+
+.product-form .form-control:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 5px rgba(191, 161, 73, 0.3);
+}
+
+.product-form .form-control[type="file"] {
+  padding: 0.3rem;
+}
+
+.product-form .image-upload {
+  position: relative;
+}
+
+.product-form .image-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.product-form .btn-success {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.product-form .btn-success:hover {
+  background-color: var(--hover-primary);
+  border-color: var(--hover-primary);
+  color: #fff;
+}
+
+.product-form .btn-secondary {
+  background-color: var(--gray-dark);
+  border-color: var(--gray-dark);
+  color: var(--white);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.product-form .btn-secondary:hover {
+  background-color: #374151;
+  border-color: #374151;
+  color: var(--white);
+}
+
+/* === Product Card === */
+.product-card {
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  background: var(--white);
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.product-card img,
+.product-card video {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+}
+
+.product-card h5 {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin: 0.5rem 0;
+}
+
+.product-card p {
+  font-size: 0.9rem;
+  color: var(--text);
+  margin: 0.25rem 0;
+}
+
+.product-card p strong {
+  color: var(--primary);
+}
+
+.product-card .btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.product-card .btn-primary:hover {
+  background-color: var(--hover-primary);
+  border-color: var(--hover-primary);
+  color: #fff;
+}
+
+.product-card .btn-danger {
+  background-color: var(--badge-red);
+  border-color: var(--badge-red);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.product-card .btn-danger:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+  color: var(--white);
+}
+
+.product-card__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+/* === Video Card === */
+.video-card {
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 300px; /* Narrower card for vertical emphasis */
+  margin: 0 auto; /* Centers cards within grid column */
+  background: var(--white);
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease;
+  aspect-ratio: 3 / 4; /* Taller card */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.video-card:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.video-card__video {
+  width: 100%;
+  height: 400px !important; /* Enforce height with higher specificity */
+  max-height: 400px !important;
+  object-fit: cover; /* Fill container, cropping if necessary */
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  aspect-ratio: 3 / 4; /* Enforce 300px width x 400px height */
+  display: block;
+  min-height: 400px; /* Prevent collapsing */
+  max-width: 100%; /* Ensure it doesn't exceed card width */
+}
+
+.video-card h5 {
+  font-size: 1.3rem;
+  color: var(--text);
+  margin: 0.5rem 0;
+}
+
+.video-card p {
+  font-size: 1rem;
+  color: var(--text);
+  margin: 0.25rem 0;
+}
+
+.video-card .btn-primary,
+.video-card .btn-danger {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  border-radius: var(--border-radius);
+}
+
+/* === Form Video Preview === */
+.product-form .image-preview video {
+  width: 150px;
+  height: 200px !important; /* Match card's vertical emphasis */
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--primary);
+  display: block;
+  min-height: 200px;
+}
+
+/* === Responsive Design === */
+@media (max-width: 991.98px) {
+  .video-card {
+    max-width: 280px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .video-card__video {
+    height: 350px !important;
+    max-height: 350px !important;
+    min-height: 350px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .product-form .image-preview video {
+    width: 140px;
+    height: 186px !important; /* 140 * 4/3 ≈ 186 */
+    min-height: 186px;
+    aspect-ratio: 3 / 4;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .video-card {
+    max-width: 100%;
+    padding: 1rem;
+    aspect-ratio: 3 / 4;
+  }
+
+  .video-card__video {
+    height: 300px !important;
+    max-height: 300px !important;
+    min-height: 300px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .product-form .image-preview video {
+    width: 120px;
+    height: 160px !important; /* 120 * 4/3 = 160 */
+    min-height: 160px;
+    aspect-ratio: 3 / 4;
+  }
+
+  .video-card h5 {
+    font-size: 1.1rem;
+  }
+
+  .video-card p {
+    font-size: 0.9rem;
+  }
+
+  .video-card .btn-primary,
+  .video-card .btn-danger {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+}
+
+/* Override any conflicting product-card video styles */
+.product-card video.video-card__video {
+  max-height: none; /* Prevent .product-card video max-height: 150px */
+}
+/* === Custom Button === */
+.custom-button {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
+}
+
+.custom-button:hover {
+  background: var(--hover-primary);
+}
+
+/* === Responsive Tasarım === */
+@media (max-width: 767.98px) {
+  .container {
+    width: 95%;
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    height: calc(100% - 70px);
+    z-index: 999;
+  }
+
+  header .fw-bold {
+    font-size: 1.2rem;
+  }
+
+  .product-form {
+    padding: 1.5rem;
+  }
+
+  .product-form .form-control,
+  .product-form .btn-success,
+  .product-form .btn-secondary {
+    font-size: 0.85rem;
+  }
+
+  .product-form .form-label {
+    font-size: 0.9rem;
+  }
+
+  .product-card {
+    padding: 0.75rem;
+  }
+
+  .product-card img,
+  .product-card video {
+    max-height: 120px;
+  }
+
+  .product-card .btn-primary,
+  .product-card .btn-danger {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .product-card__actions {
+    gap: 0.3rem;
+  }
+
+  .video-card {
+    padding: 1rem;
+  }
+
+  .video-card__video {
+    height: 250px;
+    max-height: 250px;
+  }
+
+  .video-card h5 {
+    font-size: 1.1rem;
+  }
+
+  .video-card p {
+    font-size: 0.9rem;
+  }
+
+  .video-card .btn-primary,
+  .video-card .btn-danger {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* === Footer === */
+.footer {
+  background-color: var(--darkGreen);
+  color: var(--white);
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: 2rem;
+  border-top: 2px solid var(--primary);
+}
+
+/* === Responsive Wrapper === */
+.responsive-wrapper {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* === Profile Name and Dropdown === */
+.profile-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-primary);
+  color: #fff;
+}
