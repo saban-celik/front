@@ -75,7 +75,7 @@ export default function HomePage() {
         style={{ maxWidth: "100%", padding: 0, margin: 0, paddingTop: "30px" }}
       >
         {/* Başlık */}
-        <h1 className="title">Çelikoğlu Baklava'ya Hoş Geldiniz</h1>
+        <h1 className="title">Usluoğlu Baklava'ya Hoş Geldiniz</h1>
         <p className="hoverMoveUp" title="Yukarıdaki menüden seçim yapınız">
           Bir şey seçin
           <span aria-hidden="true" className="bounceArrow">

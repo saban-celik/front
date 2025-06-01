@@ -1,11 +1,10 @@
-//C:\javacelikoglu\frontend\src\app\admin\products\baklavalar\page.tsx
 "use client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import {
-    createBaklavaProduct,
-    deleteBaklavaProduct,
-    fetchSimpleBaklavaProducts,
-    updateBaklavaProduct,
+  createBaklavaProduct,
+  deleteBaklavaProduct,
+  fetchBaklavaProducts,
+  updateBaklavaProduct,
 } from "@/utils/api";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -32,13 +31,22 @@ export default function BaklavalarPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSimpleBaklavaProducts()
-      .then((data) => setProducts(data))
-      .catch((err) => {
-        console.error("📛 Baklava ürünleri getirilemedi:", err);
+    const loadProducts = async () => {
+      try {
+        const data = await fetchBaklavaProducts();
+        console.log("Admin fetched products:", data);
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          throw new Error("Beklenmedik veri formatı");
+        }
+      } catch (err: any) {
+        console.error("Baklava ürünleri getirilemedi:", err);
         setError(err.message || "Ürünler alınırken hata oluştu");
-        toast.error("Ürünler yüklenemedi.");
-      });
+        toast.error(err.message || "Ürünler yüklenemedi.");
+      }
+    };
+    loadProducts();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +68,7 @@ export default function BaklavalarPage() {
   };
 
   const handleAddProduct = async () => {
-    if (!form.name || !form.weight || !form.image || form.price <= 0) {
+    if (!form.name || !form.weight || form.price <= 0) {
       toast.error("Lütfen tüm zorunlu alanları doldurun!");
       return;
     }
@@ -70,13 +78,8 @@ export default function BaklavalarPage() {
     formData.append("name", form.name);
     formData.append("weight", form.weight);
     formData.append("price", form.price.toString());
-    if (typeof form.image !== "string") {
+    if (typeof form.image !== "string" && form.image) {
       formData.append("image", form.image);
-    }
-
-    console.log("🧾 FormData içeriği:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0], ":", pair[1]);
     }
 
     try {
@@ -88,6 +91,10 @@ export default function BaklavalarPage() {
         toast.success("Ürün güncellendi!");
         setEditingId(null);
       } else {
+        if (!form.image) {
+          toast.error("Yeni ürün için resim zorunludur!");
+          return;
+        }
         const added = await createBaklavaProduct(formData);
         setProducts((prev) => [...prev, added]);
         toast.success("Ürün eklendi!");
@@ -96,31 +103,44 @@ export default function BaklavalarPage() {
       setForm({ name: "", weight: "", price: 0, image: "" });
       setImagePreview(null);
     } catch (err: any) {
-      console.error("❌ Ürün işlemi hatası:", err);
-      setError(err.message);
-      toast.error(err.message || "Ürün eklenemedi.");
+      console.error("Ürün işlemi hatası:", err);
+      const errorMessage = err.message || "Ürün işlemi başarısız.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
-  const handleDeleteProduct = async (id: number) => {
+  const handleDeleteProduct = async (id?: number) => {
+    if (!id) {
+      toast.error("Ürün ID'si bulunamadı.");
+      return;
+    }
     if (confirm("Bu ürünü silmek istediğinize emin misiniz?")) {
       try {
         await deleteBaklavaProduct(id);
         setProducts((prev) => prev.filter((p) => p.id !== id));
         toast.success("Ürün silindi!");
       } catch (err: any) {
-        setError(err.message);
-        toast.error(err.message || "Ürün silinemedi.");
+        console.error("Silme hatası:", err);
+        const errorMessage = err.message || "Ürün silinemedi.";
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     }
   };
 
   const handleEditProduct = (product: Product) => {
+    if (!product.id) {
+      toast.error("Ürün ID'si bulunamadı.");
+      return;
+    }
     setForm(product);
-    setEditingId(product.id ?? null);
+    setEditingId(product.id);
     setImagePreview(
       typeof product.image === "string"
-        ? product.image
+        ? product.image.startsWith("http")
+          ? product.image
+          : `http://localhost:8080${product.image}`
         : URL.createObjectURL(product.image)
     );
   };
@@ -195,7 +215,7 @@ export default function BaklavalarPage() {
                 className="form-control"
                 accept="image/*"
                 onChange={handleChange}
-                required
+                required={!editingId}
               />
             </div>
           </div>
@@ -218,49 +238,53 @@ export default function BaklavalarPage() {
         </div>
 
         <div className="row mt-5">
-          {products.map((product) => (
-            <div key={product.id} className="col-md-3 mb-4">
-              <div className="product-card">
-                <img
-                  src={
-                    typeof product.image === "string"
-                      ? `http://localhost:5000${product.image}` // ✅ backend'teki uploads klasörünü göster
-                      : URL.createObjectURL(product.image)
-                  }
-                  alt={product.name}
-                  style={{
-                    width: "100%",
-                    height: "180px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    border: "1px solid #ddd",
-                  }}
-                />
-
-                <h5 className="mt-2">{product.name}</h5>
-                <p>{product.weight}</p>
-                <p>
-                 <strong className="mt-1">{Number(product.price).toFixed(2)} ₺</strong>
-
-                </p>
-
-                <div className="product-card__actions">
-                  <button
-                    onClick={() => handleEditProduct(product)}
-                    className="btn btn-primary btn-sm"
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProduct(product.id!)}
-                    className="btn btn-danger btn-sm"
-                  >
-                    Sil
-                  </button>
+          {products.length === 0 ? (
+            <p>Henüz baklava ürünü eklenmemiş.</p>
+          ) : (
+            products.map((product, idx) => (
+              <div key={product.id || `baklava-${idx}`} className="col-md-3 mb-4 d-flex">
+                <div className="product-card">
+                  <img
+                    src={
+                      typeof product.image === "string"
+                        ? product.image.startsWith("http")
+                          ? product.image
+                          : `http://localhost:8080${product.image}`
+                        : "https://via.placeholder.com/150?text=No+Image"
+                    }
+                    alt={product.name}
+                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/150?text=No+Image")}
+                    style={{
+                      width: "100%",
+                      height: "180px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                  <h5 className="mt-2">{product.name}</h5>
+                  <p>{product.weight}</p>
+                  <p>
+                    <strong>{Number(product.price).toFixed(2)} ₺</strong>
+                  </p>
+                  <div className="product-card__actions">
+                    <button
+                      onClick={() => handleEditProduct(product)}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="btn btn-danger btn-sm"
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </AdminLayout>

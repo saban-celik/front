@@ -2,13 +2,15 @@
 "use client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import {
-    createVideo,
-    deleteVideo,
-    fetchVideos,
-    updateVideo,
-    VideoItem,
+  createVideo,
+  deleteVideo,
+  fetchVideos,
+  updateVideo,
+  VideoItem,
 } from "@/utils/api";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function VideoPage() {
   const [videoItems, setVideoItems] = useState<VideoItem[]>([]);
@@ -18,16 +20,28 @@ export default function VideoPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchVideos()
-      .then(setVideoItems)
-      .catch((err) => setError(err.message));
+    const loadVideos = async () => {
+      try {
+        const data = await fetchVideos();
+        if (Array.isArray(data)) {
+          setVideoItems(data);
+        } else {
+          throw new Error("Beklenmedik veri formatı");
+        }
+      } catch (err: any) {
+        console.error("📛 Videolar getirilemedi:", err);
+        setError(err.message || "Videolar alınırken hata oluştu");
+        toast.error("Videolar yüklenemedi.");
+      }
+    };
+    loadVideos();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("video/")) {
-      alert("Lütfen yalnızca video dosyası yükleyin.");
+      toast.error("Lütfen yalnızca video dosyası yükleyin.");
       return;
     }
     setFormFile(file);
@@ -36,7 +50,7 @@ export default function VideoPage() {
 
   const submit = async () => {
     if (!formFile && editingId === null) {
-      alert("Lütfen bir video seçin.");
+      toast.error("Lütfen bir video seçin.");
       return;
     }
     setError(null);
@@ -51,37 +65,48 @@ export default function VideoPage() {
         setVideoItems((v) =>
           v.map((x) => (x.id === editingId ? updated : x))
         );
+        toast.success("Video güncellendi!");
         setEditingId(null);
       } else {
         const added = await createVideo(fd);
         setVideoItems((v) => [...v, added]);
+        toast.success("Video eklendi!");
       }
       setFormFile(null);
       setPreview(null);
     } catch (e: any) {
-      setError(e.message);
-      alert(e.message);
+      console.error("❌ Video işlemi hatası:", e);
+      const errorMessage = e.message || "Video işlemi başarısız.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   const edit = (item: VideoItem) => {
-    setEditingId(item.id!);
+    if (!item.id) {
+      toast.error("Video ID'si bulunamadı.");
+      return;
+    }
+    setEditingId(item.id);
     setPreview(
       typeof item.url === "string" && item.url.startsWith("/uploads/")
-        ? `http://localhost:5000${item.url}`
-        : item.url
+        ? `http://localhost:8080${item.url}`
+        : item.url || "https://via.placeholder.com/150?text=No+Video"
     );
     setFormFile(null);
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Silmek istediğinize emin misiniz?")) return;
+    if (!confirm("Bu videoyu silmek istediğinize emin misiniz?")) return;
     try {
       await deleteVideo(id);
       setVideoItems((v) => v.filter((x) => x.id !== id));
+      toast.success("Video silindi!");
     } catch (e: any) {
-      setError(e.message);
-      alert(e.message);
+      console.error("❌ Silme hatası:", e);
+      const errorMessage = e.message || "Video silinemedi.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -104,6 +129,13 @@ export default function VideoPage() {
                   src={preview}
                   controls
                   className="video-card__video"
+                  style={{
+                    width: "100%",
+                    maxHeight: "300px",
+                    objectFit: "contain",
+                    borderRadius: "8px",
+                    border: "1px solid var(--primary)",
+                  }}
                 />
               </div>
             )}
@@ -113,10 +145,11 @@ export default function VideoPage() {
               accept="video/*"
               className="form-control"
               onChange={handleFileChange}
+              required={editingId === null}
             />
           </div>
 
-          <button onClick={submit} className="btn-success">
+          <button onClick={submit} className="btn btn-success">
             {editingId ? "Güncelle" : "Ekle"}
           </button>
           {editingId && (
@@ -126,7 +159,7 @@ export default function VideoPage() {
                 setFormFile(null);
                 setPreview(null);
               }}
-              className="btn-secondary ms-2"
+              className="btn btn-secondary ms-2"
             >
               İptal
             </button>
@@ -134,35 +167,47 @@ export default function VideoPage() {
         </div>
 
         <div className="row mt-5">
-          {videoItems.map((item) => (
-            <div key={item.id} className="col-md-4 mb-4">
-              <div className="video-card">
-                <video
-                  src={
-                    item.url.startsWith("/uploads/")
-                      ? `http://localhost:5000${item.url}`
-                      : item.url
-                  }
-                  controls
-                  className="video-card__video"
-                />
-                <div className="product-card__actions">
-                  <button
-                    onClick={() => edit(item)}
-                    className="btn-primary"
-                  >
-                    Düzenle
-                  </button>
-                  <button
-                    onClick={() => remove(item.id!)}
-                    className="btn-danger"
-                  >
-                    Sil
-                  </button>
+          {videoItems.length === 0 ? (
+            <p>Henüz video eklenmemiş.</p>
+          ) : (
+            videoItems.map((item) => (
+              <div key={item.id} className="col-md-4 mb-4">
+                <div className="video-card">
+                  <video
+                    src={
+                      typeof item.url === "string" && item.url.startsWith("/uploads/")
+                        ? `http://localhost:8080${item.url}`
+                        : item.url || "https://via.placeholder.com/150?text=No+Video"
+                    }
+                    controls
+                    className="video-card__video"
+                    style={{
+                      width: "100%",
+                      maxHeight: "200px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
+                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/150?text=No+Video")}
+                  />
+                  <div className="product-card__actions">
+                    <button
+                      onClick={() => edit(item)}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => remove(item.id!)}
+                      className="btn btn-danger btn-sm"
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </AdminLayout>

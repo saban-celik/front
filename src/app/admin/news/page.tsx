@@ -3,13 +3,15 @@
 import AdminLayout from "@/components/admin/AdminLayout";
 import { createNews, deleteNews, fetchNews, updateNews } from "@/utils/api";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface NewsItem {
   id?: number;
   title: string;
   content: string;
-  media?: string | File;  // frontend için medya (yeni dosya veya URL)
-  image?: string;         // backend'den gelen url (image)
+  media?: string | File; // frontend için medya (yeni dosya veya URL)
+  image?: string; // backend'den gelen url (image)
 }
 
 export default function NewsPage() {
@@ -20,15 +22,31 @@ export default function NewsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchNews()
-      .then((data) => setNewsItems(data))
-      .catch((err) => setError(err.message));
+    const loadNews = async () => {
+      try {
+        const data = await fetchNews();
+        if (Array.isArray(data)) {
+          setNewsItems(data);
+        } else {
+          throw new Error("Beklenmedik veri formatı");
+        }
+      } catch (err: any) {
+        console.error("📛 Haberler getirilemedi:", err);
+        setError(err.message || "Haberler alınırken hata oluştu");
+        toast.error("Haberler yüklenemedi.");
+      }
+    };
+    loadNews();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, files } = e.target as HTMLInputElement;
     if (name === "media" && files && files[0]) {
       const file = files[0];
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        toast.error("Lütfen yalnızca resim veya video dosyası yükleyin.");
+        return;
+      }
       setForm((prev) => ({ ...prev, media: file }));
       setMediaPreview(URL.createObjectURL(file));
     } else {
@@ -37,8 +55,8 @@ export default function NewsPage() {
   };
 
   const handleAddNewsItem = async () => {
-    if (!form.title || !form.content || (!form.media && !form.image)) {
-      alert("Lütfen tüm alanları doldurun.");
+    if (!form.title || !form.content || (!form.media && !editingId)) {
+      toast.error("Lütfen tüm zorunlu alanları doldurun.");
       return;
     }
     setError(null);
@@ -47,7 +65,6 @@ export default function NewsPage() {
     formData.append("title", form.title);
     formData.append("content", form.content);
 
-    // Sadece yeni yüklenen dosya varsa ekle
     if (form.media instanceof File) {
       formData.append("media", form.media);
     }
@@ -58,56 +75,70 @@ export default function NewsPage() {
         setNewsItems((prev) =>
           prev.map((item) => (item.id === editingId ? updatedNews : item))
         );
+        toast.success("Haber güncellendi!");
         setEditingId(null);
       } else {
         const newNews = await createNews(formData);
         setNewsItems((prev) => [...prev, newNews]);
+        toast.success("Haber eklendi!");
       }
       setForm({ title: "", content: "", media: "", image: "" });
       setMediaPreview(null);
     } catch (err: any) {
-      setError(err.message);
-      alert(err.message);
+      console.error("❌ Haber işlemi hatası:", err);
+      const errorMessage = err.message || "Haber işlemi başarısız.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
-  const handleDeleteNewsItem = async (id: number) => {
+  const handleDeleteNewsItem = async (id?: number) => {
+    if (!id) {
+      toast.error("Haber ID'si bulunamadı.");
+      return;
+    }
     if (confirm("Bu haberi silmek istediğinize emin misiniz?")) {
       setError(null);
       try {
         await deleteNews(id);
         setNewsItems((prev) => prev.filter((item) => item.id !== id));
+        toast.success("Haber silindi!");
       } catch (err: any) {
-        setError(err.message);
-        alert(err.message);
+        console.error("❌ Silme hatası:", err);
+        const errorMessage = err.message || "Haber silinemedi.";
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     }
   };
 
   const handleEditNewsItem = (item: NewsItem) => {
+    if (!item.id) {
+      toast.error("Haber ID'si bulunamadı.");
+      return;
+    }
     setForm({
       ...item,
       media: item.media ?? item.image ?? "",
     });
-    setEditingId(item.id ?? null);
+    setEditingId(item.id);
 
     if (item.media) {
-      if (typeof item.media !== "string") {
-        setMediaPreview(URL.createObjectURL(item.media));
+      if (typeof item.media === "string") {
+        setMediaPreview(
+          item.media.startsWith("/uploads/")
+            ? `http://localhost:8080${item.media}`
+            : item.media
+        );
       } else {
-        // backend'den gelen image yolu varsa, tam url yap
-        if (item.media.startsWith("/uploads/")) {
-          setMediaPreview(`http://localhost:5000${item.media}`);
-        } else {
-          setMediaPreview(item.media);
-        }
+        setMediaPreview(URL.createObjectURL(item.media));
       }
     } else if (item.image) {
-      if (item.image.startsWith("/uploads/")) {
-        setMediaPreview(`http://localhost:5000${item.image}`);
-      } else {
-        setMediaPreview(item.image);
-      }
+      setMediaPreview(
+        item.image.startsWith("/uploads/")
+          ? `http://localhost:8080${item.image}`
+          : item.image
+      );
     } else {
       setMediaPreview(null);
     }
@@ -132,6 +163,7 @@ export default function NewsPage() {
               placeholder="Haber Başlığı"
               value={form.title}
               onChange={handleChange}
+              required
             />
           </div>
 
@@ -145,6 +177,7 @@ export default function NewsPage() {
               value={form.content}
               onChange={handleChange}
               rows={6}
+              required
             />
           </div>
 
@@ -153,7 +186,7 @@ export default function NewsPage() {
             <div className="image-upload">
               {mediaPreview && (
                 <div className="image-preview mb-2">
-                  {form.media && typeof form.media !== "string" && form.media.type?.startsWith("video/") ? (
+                  {form.media instanceof File && form.media.type.startsWith("video/") ? (
                     <video
                       src={mediaPreview}
                       controls
@@ -162,7 +195,7 @@ export default function NewsPage() {
                         height: "150px",
                         objectFit: "cover",
                         borderRadius: "8px",
-                        border: `1px solid var(--primary)`,
+                        border: "1px solid var(--primary)",
                       }}
                     />
                   ) : (
@@ -174,7 +207,7 @@ export default function NewsPage() {
                         height: "150px",
                         objectFit: "cover",
                         borderRadius: "8px",
-                        border: `1px solid var(--primary)`,
+                        border: "1px solid var(--primary)",
                       }}
                     />
                   )}
@@ -187,6 +220,7 @@ export default function NewsPage() {
                 className="form-control"
                 accept="image/*,video/*"
                 onChange={handleChange}
+                required={!editingId}
               />
             </div>
           </div>
@@ -209,71 +243,78 @@ export default function NewsPage() {
         </div>
 
         <div className="row mt-5">
-          {newsItems.map((item, idx) => {
-            const src = item.media
-              ? typeof item.media === "string"
-                ? item.media.startsWith("/uploads/")
-                  ? `http://localhost:5000${item.media}`
-                  : item.media
-                : URL.createObjectURL(item.media)
-              : item.image
-              ? item.image.startsWith("/uploads/")
-                ? `http://localhost:5000${item.image}`
-                : item.image
-              : "";
+          {newsItems.length === 0 ? (
+            <p>Henüz haber eklenmemiş.</p>
+          ) : (
+            newsItems.map((item, idx) => {
+              const src =
+                item.media
+                  ? typeof item.media === "string"
+                    ? item.media.startsWith("/uploads/")
+                      ? `http://localhost:8080${item.media}`
+                      : item.media
+                    : URL.createObjectURL(item.media)
+                  : item.image
+                  ? item.image.startsWith("/uploads/")
+                    ? `http://localhost:8080${item.image}`
+                    : item.image
+                  : "https://via.placeholder.com/150?text=No+Media";
 
-            const isVideo =
-              (typeof item.media !== "string" && item.media?.type?.startsWith("video/")) ||
-              src.toLowerCase().endsWith(".mp4");
+              const isVideo =
+                (typeof item.media === "string" && item.media.toLowerCase().endsWith(".mp4")) ||
+                (typeof item.media !== "string" && item.media?.type?.startsWith("video/"));
 
-            return (
-              <div key={item.id ?? idx} className="col-md-3 mb-4">
-                <div className="product-card">
-                  {isVideo ? (
-                    <video
-                      src={src}
-                      controls
-                      style={{
-                        width: "100%",
-                        maxHeight: "150px",
-                        objectFit: "cover",
-                        borderRadius: "var(--border-radius)",
-                        marginBottom: "0.5rem",
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={src}
-                      alt={item.title}
-                      style={{
-                        width: "100%",
-                        maxHeight: "150px",
-                        objectFit: "cover",
-                        borderRadius: "var(--border-radius)",
-                        marginBottom: "0.5rem",
-                      }}
-                    />
-                  )}
-                  <h5 className="mt-2">{item.title}</h5>
-                  <p>{item.content.substring(0, 100)}...</p>
-                  <div className="product-card__actions">
-                    <button
-                      onClick={() => handleEditNewsItem(item)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      Düzenle
-                    </button>
-                    <button
-                      onClick={() => handleDeleteNewsItem(item.id!)}
-                      className="btn btn-danger btn-sm"
-                    >
-                      Sil
-                    </button>
+              return (
+                <div key={item.id ?? `news-${idx}`} className="col-md-3 mb-4">
+                  <div className="product-card">
+                    {isVideo ? (
+                      <video
+                        src={src}
+                        controls
+                        style={{
+                          width: "100%",
+                          maxHeight: "150px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: "1px solid #ddd",
+                        }}
+                        onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/150?text=No+Media")}
+                      />
+                    ) : (
+                      <img
+                        src={src}
+                        alt={item.title}
+                        style={{
+                          width: "100%",
+                          maxHeight: "150px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: "1px solid #ddd",
+                        }}
+                        onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/150?text=No+Media")}
+                      />
+                    )}
+                    <h5 className="mt-2">{item.title}</h5>
+                    <p>{item.content.substring(0, 100)}...</p>
+                    <div className="product-card__actions">
+                      <button
+                        onClick={() => handleEditNewsItem(item)}
+                        className="btn btn-primary btn-sm"
+                      >
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNewsItem(item.id)}
+                        className="btn btn-danger btn-sm"
+                      >
+                        Sil
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </AdminLayout>

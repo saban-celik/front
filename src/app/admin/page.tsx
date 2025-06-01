@@ -1,26 +1,21 @@
-//C:\javacelikoglu\frontend\src\app\admin\page.tsx
+// C:\javacelikoglu\frontend\src\app\admin\page.tsx
 "use client";
+
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAuth } from "@/hooks/useauth";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AdminPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-
-    if (!user.isAdmin) {
-      router.push("/");
-    } else {
-      setLoading(false);
+    if (!loading) {
+      setIsReady(true);
     }
-  }, [user, router]);
+  }, [loading]);
 
-  if (!user || loading) {
+  if (loading || !isReady) {
     return <p className="text-center my-5">Yükleniyor...</p>;
   }
 
@@ -30,7 +25,7 @@ export default function AdminPage() {
         <div className="dashboard">
           <h2 className="dashboard__title mb-4">Admin Paneli</h2>
           <p className="mb-3">
-            Hoş geldiniz, <strong>{user.name}</strong> 👋
+            Hoş geldiniz, <strong>{user?.name || "Ziyaretçi"}</strong> 👋
           </p>
           <p>
             Bu panelden ürün ekleyebilir, yorumları yönetebilir, haberleri düzenleyebilir ve daha

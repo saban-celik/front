@@ -21,9 +21,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <AdminTopbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <div className="d-flex flex-grow-1">
         <AdminSidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <main className="flex-grow-1" tabIndex={-1}>
-          {children}
-        </main>
+        <main className="flex-grow-1 p-4 bg-light">{children}</main>
       </div>
     </div>
   );

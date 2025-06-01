@@ -26,7 +26,7 @@ const AdminTopbar = ({ toggleSidebar, isSidebarOpen }: AdminTopbarProps) => {
         <FaBars />
       </button>
 
-      <div className="fw-bold fs-4">Çelikoğlu Admin Paneli</div>
+      <div className="fw-bold fs-4">Usluoğlu Admin Paneli</div>
       <div className="d-none d-md-block" style={{ fontSize: "1rem" }}>
         Yönetici Ekranı
       </div>

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-    FaBoxOpen,
-    FaChartBar,
-    FaCog,
-    FaNewspaper,
-    FaSignOutAlt,
-    FaStore,
+  FaBoxOpen,
+  FaChartBar,
+  FaCog,
+  FaNewspaper,
+  FaSignOutAlt,
+  FaStore,
 } from "react-icons/fa";
 
 interface AdminSidebarProps {

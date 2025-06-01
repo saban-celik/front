@@ -1,4 +1,3 @@
-// C:\javacelikoglu\frontend\src\hooks\useauth.ts
 import { fetchUserById } from '@/utils/api';
 import { useEffect, useState } from 'react';
 
@@ -13,29 +12,33 @@ let globalSetUser: ((u: User | null) => void) | null = null;
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     globalSetUser = setUser;
 
     const stored = localStorage.getItem("user");
 
-    // ❗"undefined", null, boş string gibi geçersiz değerleri ele
     if (stored && stored !== "undefined") {
       try {
         const parsed = JSON.parse(stored);
         if (parsed?.id) {
           fetchUserById(parsed.id)
             .then(data => setUser(data))
-            .catch(() => setUser(null));
+            .catch(() => setUser(null))
+            .finally(() => setLoading(false));
         } else {
           setUser(null);
+          setLoading(false);
         }
       } catch (e) {
         console.error("Geçersiz localStorage verisi:", e);
         setUser(null);
+        setLoading(false);
       }
     } else {
       setUser(null);
+      setLoading(false);
     }
 
     return () => {
@@ -43,7 +46,7 @@ export const useAuth = () => {
     };
   }, []);
 
-  return { user };
+  return { user, loading };
 };
 
 export const loginUser = (user: User) => {

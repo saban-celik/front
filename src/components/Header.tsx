@@ -1,7 +1,7 @@
 //C:\javacelikoglu\frontend\src\components\Header.tsx
 "use client";
 
-import { logoutUser,useAuth } from "@/hooks/useauth";
+import { logoutUser, useAuth } from "@/hooks/useauth";
 import { Heart, Search, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -49,7 +49,7 @@ export default function Header({ favoritesCount }: HeaderProps) {
     >
       <div className="d-flex justify-content-between align-items-center container">
         <Link href="/" className="fw-bold fs-4 text-white text-decoration-none">
-          Çelikoğlu Baklava
+          UsluOğlu Baklava
         </Link>
 
         <nav className="d-flex gap-4">
